@@ -7,13 +7,13 @@ import re
 
 def search_files(words, database):
     results = {}
-    for file in os.listdir(database):
+    for file in os.listdir(database): # Itera sobre todos os arquivos
         count = 0
         try:
             with open(database + "/" + file, 'r', encoding='utf-8') as f:
                 raw_text = f.read()
                 text = re.sub("[.,]", "", raw_text)
-                for word in words:
+                for word in words: # Para cada palavra chave recebida pelo nó raiz, conta a quantidade de aparições no arquivo
                     count += text.lower().count(word.lower())
             results[file] = count
         except FileNotFoundError:
