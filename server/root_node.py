@@ -8,7 +8,7 @@ def query_replica(replica, words_subset, lock, results):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s: # Cria um novo socket para se conectar a uma replica
         s.connect((replica['address'], replica['port']))
         
-        print(f"Data send to replica: {words_subset}")
+        print(f"Sending data to replica: {words_subset}")
         s.send(json.dumps(words_subset).encode('utf-8')) # Envia o subconjunto de palavras chave
 
         replica_result = json.loads(s.recv(4096).decode('utf-8')) # Recebe os arquivos relacionados e as suas ocorrências
@@ -73,7 +73,6 @@ def main():
         print(f"Accepted connection from {addr}")
         client_handler = Thread(target=handle_client, args=(client_socket, replicas)) # Atribui uma thread para lidar com o cliente
         client_handler.start()
-        #client_handler.join()
 
 
 if __name__ == "__main__":
