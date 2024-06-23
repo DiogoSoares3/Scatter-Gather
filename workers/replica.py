@@ -47,7 +47,6 @@ def handle_root(root_socket, database):
 
 
 def main(config_file):
-    
     # Obtém configurações da réplica
     with open(config_file, 'r') as f:
         config = json.load(f)

@@ -5,7 +5,7 @@ import random
 
 
 def main():
-    with open('client_config.json', 'r') as f:
+    with open('client/client_config.json', 'r') as f:
         config = json.load(f) 
     
     # Pega as configurações do arquivo de configuração .json

@@ -53,7 +53,7 @@ def handle_client(client_socket, replicas):
 
 
 def main():
-    with open('root_node_config.json', 'r') as f:
+    with open('server/root_node_config.json', 'r') as f:
         config = json.load(f)
     
     # Pegando as configurações do nó raiz

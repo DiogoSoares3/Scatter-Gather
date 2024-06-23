@@ -1,5 +1,5 @@
 {
     "address": "localhost",
     "port": 5003,
-    "database_directory": "../data"
+    "database_directory": "./data"
 }
