@@ -21,7 +21,7 @@ def main():
             client.send(query.encode('utf-8'))
             response = json.loads(client.recv(4096).decode('utf-8'))
             print(f"Received response: {response}")
-        
+
         time.sleep(random.randint(1, 2))
 
 

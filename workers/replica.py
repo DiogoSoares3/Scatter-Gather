@@ -62,10 +62,13 @@ def main(config_file):
     print(f"Replica listening on {address}:{port}")
 
     while True:
-        root_socket, addr = server.accept() # Aceita conexões das threads da raiz
-        print(f"Accepted connection from {addr}")
-        root_handler = Process(target=handle_root, args=(root_socket, database)) # Cria um processo para lidar com as requisições da raiz
-        root_handler.start()
+        try:
+            root_socket, addr = server.accept() # Aceita conexões das threads da raiz
+            print(f"Accepted connection from {addr}")
+            root_handler = Process(target=handle_root, args=(root_socket, database)) # Cria um processo para lidar com as requisições da raiz
+            root_handler.start()
+        except KeyboardInterrupt:
+            root_socket.close()
 
 
 if __name__ == "__main__":
