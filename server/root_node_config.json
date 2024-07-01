@@ -1,7 +1,7 @@
 {
     "address": "localhost",
     "port": 5000,
-    "replicas": [
+    "workers": [
         {"address": "localhost", "port": 5001},
         {"address": "localhost", "port": 5002},
         {"address": "localhost", "port": 5003}

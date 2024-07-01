@@ -7,13 +7,13 @@ import re
 
 def search_files(words, database):
     results = {}
-    for file in os.listdir(database): # Itera sobre todos os arquivos
+    for file in os.listdir(database): # Iterates over all files
         count = 0
         try:
             with open(database + "/" + file, 'r', encoding='utf-8') as f:
                 raw_text = f.read()
                 text = re.sub("[.,]", "", raw_text)
-                for word in words: # Para cada palavra chave recebida pelo nó raiz, conta a quantidade de aparições no arquivo
+                for word in words: # For each keyword received by the root node, it counts the number of appearances in the file
                     count += text.lower().count(word.lower())
             results[file] = count
         except FileNotFoundError:
@@ -24,16 +24,16 @@ def search_files(words, database):
 def handle_root(root_socket, database):
     while True:
         try:
-            data = root_socket.recv(1024).decode('utf-8') # Recebe o subcojunto de palavras chave da raiz
+            data = root_socket.recv(1024).decode('utf-8') # Receives the subset of keywords from the root
 
-            if not data: # Se não receber mais requisições, encerra a conexão
+            if not data: # If no more requests are received, the connection is closed
                 print("No data received, breaking the loop.")
                 break
 
             words = json.loads(data)
-            results = search_files(words, database) # Faz a busca nos arquivos para ver as ocorrências dessas palavras chave
+            results = search_files(words, database) # Search the archives to see the occurrences of these keywords
 
-            root_socket.send(json.dumps(results).encode('utf-8')) # Responde à raiz enviando os arquivos e suas respectivas ocorrências
+            root_socket.send(json.dumps(results).encode('utf-8')) # Responds to the root by sending the files and their respective occurrences
 
         except json.JSONDecodeError as e:
             print(f"JSON decode error: {e}")
@@ -47,7 +47,7 @@ def handle_root(root_socket, database):
 
 
 def main(config_file):
-    # Obtém configurações da réplica
+    # Get worker settings
     with open(config_file, 'r') as f:
         config = json.load(f)
 
@@ -55,17 +55,17 @@ def main(config_file):
     port = config['port']
     database = config['database_directory']
     
-    # Cria um socket para o nó replica se conectar com o nó raiz
+    # Creates a socket for the worker node to connect to the root node
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((address, port))
     server.listen(5)
-    print(f"Replica listening on {address}:{port}")
+    print(f"Worker listening on {address}:{port}")
 
     while True:
         try:
-            root_socket, addr = server.accept() # Aceita conexões das threads da raiz
+            root_socket, addr = server.accept() # Accepts connections from root threads
             print(f"Accepted connection from {addr}")
-            root_handler = Process(target=handle_root, args=(root_socket, database)) # Cria um processo para lidar com as requisições da raiz
+            root_handler = Process(target=handle_root, args=(root_socket, database)) # Creates a process to handle requests from the root
             root_handler.start()
         except KeyboardInterrupt:
             root_socket.close()

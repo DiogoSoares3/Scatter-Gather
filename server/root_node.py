@@ -5,56 +5,56 @@ from multiprocessing import Process
 from collections import defaultdict
 
 
-def gather(replica_socket, lock, results, i):
-    replica_result = json.loads(replica_socket.recv(4096).decode('utf-8')) # Recebe os arquivos relacionados e as suas ocorrências
-    print(f"Data received from replica {i}: {replica_result}")
+def gather(worker_socket, lock, results, i):
+    worker_result = json.loads(worker_socket.recv(4096).decode('utf-8')) #  Receives related files and their occurrences
+    print(f"Data received from worker {i}: {worker_result}")
 
-    with lock:  # Exclusão mútua ao modificar a variável results
-        for file, count in replica_result.items():
-            results[file] += count  # Adiciona o número de ocorrências ao total de cada um dos arquivos
+    with lock:  # Mutual exclusion when modifying the results variable
+        for file, count in worker_result.items():
+            results[file] += count  # Adds the number of occurrences to the total for each of the files
                 
 
-def scatter(replica_socket, words_subset, i):
-    print(f"Sending data to replica {i}: {words_subset}")
-    replica_socket.send(json.dumps(words_subset).encode('utf-8')) # Envia o subconjunto de palavras chave
+def scatter(worker_socket, words_subset, i):
+    print(f"Sending data to worker {i}: {words_subset}")
+    worker_socket.send(json.dumps(words_subset).encode('utf-8')) # Send the subset of keywords
 
 
 def handle_client(client_socket):
     while True:
         try:
-            query = client_socket.recv(1024).decode('utf-8') # Recebe a requisição do cliente
+            query = client_socket.recv(1024).decode('utf-8') # Receives the request from the client
 
-            if not query: # Se o socket do cliente não enviar mais nada, quebra o loop e a thread é automaticamente eliminada
+            if not query: # If the client socket doesn't send anything else, it breaks the loop and the thread is automatically deleted
                 break
             
             print(f"Received query from client: {query}")
             results = defaultdict(int)
             lock = Lock()
 
-            words = query.split() # Separa em palavras chave
-            num_replicas = len(REPLICAS)
+            words = query.split() # Separate into keywords
+            num_workers = len(WORKERS)
 
             threads_scatter_and_gather = []
-            for i, replica in enumerate(REPLICAS):
-                words_subset = words[i::num_replicas] # Para cada replica é atribuida um subconjunto de palavras chave da requisição do cliente
+            for i, worker in enumerate(WORKERS):
+                words_subset = words[i::num_workers] # Each worker is assigned a subset of keywords from the client's request
                 
-                replica_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Cria um novo socket para se conectar a uma replica
-                replica_socket.connect((replica['address'], replica['port']))
+                worker_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Create a new socket to connect to a worker
+                worker_socket.connect((worker['address'], worker['port']))
                 
-                # Dispersando o envio de mensagens para as réplicas (Scatter)
-                ts = Thread(target=scatter, args=(replica_socket, words_subset, i,))
+                # Spreading the messages to the workers (Scatter)
+                ts = Thread(target=scatter, args=(worker_socket, words_subset, i,))
                 ts.start()
                 threads_scatter_and_gather.append(ts)
 
-                # Reunindo as informações retornadas por cada réplica (Gather)
-                tg = Thread(target=gather, args=(replica_socket, lock, results, i,))
+                # Gathering the information returned by each worker (Gather)
+                tg = Thread(target=gather, args=(worker_socket, lock, results, i,))
                 tg.start()
                 threads_scatter_and_gather.append(tg)
 
             for t in threads_scatter_and_gather:
                 t.join()
 
-            client_socket.send(json.dumps(results).encode('utf-8')) # Envia a resposta para o cliente
+            client_socket.send(json.dumps(results).encode('utf-8')) # Send the answer to the client
         
         except Exception as e:
             print(f"Error handling client: {e}")
@@ -64,7 +64,7 @@ def handle_client(client_socket):
 
 
 def main():
-    # Atribuindo um socket ao nó raiz que ficará escutando clientes e replicas
+    # Atribuindo um socket ao nó raiz que ficará escutando clientes e workers
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((ADRESS, PORT))
     server.listen(5)
@@ -87,6 +87,6 @@ if __name__ == "__main__":
         
     ADRESS = config['address']
     PORT = config['port']
-    REPLICAS = config['replicas']
+    WORKERS = config['workers']
 
     main()

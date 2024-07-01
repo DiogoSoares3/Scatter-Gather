@@ -8,12 +8,12 @@ def main():
     with open('client/client_config.json', 'r') as f:
         config = json.load(f) 
     
-    # Pega as configurações do arquivo de configuração .json
+    # Get the settings from the .json configuration file
     root_address = config['root_address']
     root_port = config['root_port']
     requests = config['requests']
     
-    # Quando o cliente realiza uma nova requisição se cria um novo socket
+    # When the client makes a new request, a new socket is created, simulating diferent client connections
     for query in requests:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
             client.connect((root_address, root_port))
