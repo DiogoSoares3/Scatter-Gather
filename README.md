@@ -22,6 +22,10 @@ Other requirements:
 
     - Requests should be made at random intervals of 1 to 2 seconds.
 
+### Supporting image
+
+![image](support_image.png)
+
 ### How to run the code
 
 You need to initialize at 5 instances of terminals. One to run the root node, other 3 to run the workers, and the other one to run the client.
